@@ -1,5 +1,10 @@
+# Project root gitignore
+
+# Ignore gradle files
 .gradle
-/build/
+
+# Ignore Gradle build output directory
+build
 
 # Ignore Gradle GUI config
 gradle-app.setting
