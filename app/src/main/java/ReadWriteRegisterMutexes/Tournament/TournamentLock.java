@@ -2,6 +2,8 @@ package ReadWriteRegisterMutexes.Tournament;
 
 import java.lang.Math;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * TournamentLock class implements the Peterson's Tournament algorithm
@@ -14,8 +16,8 @@ public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
     /**
      * Number of threads or leaves of the tournament tree
      * 
-     * This must be a power of 2. If n is not a power of 2, "dummy" threads that do
-     * nothing must be added to make it a power of 2.
+     * This must be a power of 2. If n is not a power of 2, "dummy" threads that
+     * do nothing must be added to make it a power of 2.
      */
     private int n;
     /**
@@ -25,45 +27,86 @@ public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
      */
     private int hTree;
     /**
-     * Shared variable that indicates if a process wants to access the CS in each
-     * node contest
+     * Shared variable that indicates if a process wants to access the CS in
+     * each node contest
      * 
-     * Both registers for process 0 and 1 in each tournament are stored in the same
-     * array. This way each node in the tree will have 2 entries: b[level][2*node]
-     * and b[level][2*node+1], where the size of b is the height of the tree (for
-     * the level dimension) by the number of leaves in the tree (for the node
-     * dimension).
+     * Both registers for process 0 and 1 in each tournament are stored in the
+     * same array. This way each node in the tree will have 2 entries:
+     * wantCS[level][2*node] and wantCS[level][2*node+1], where the size of
+     * wantCS is the height of the tree (for the level dimension) by the number
+     * of leaves in the tree (for the node dimension).
+     * 
+     * Array entries need to be AtomicBooleans, so that reads and writes of an
+     * array entry are atomic:
+     * //stackoverflow.com/questions/2236184/how-to-declare-array-elements-volatile-in-java
      */
-    private volatile boolean[][] wantCS;
+    private volatile AtomicBoolean[][] wantCS;
     /**
      * Shared variable that indicates the turn in each node contest
      * 
-     * Each node in the tree will have an entry: turn[level][node], where the size
-     * of turn is the height of the tree (for level dimension) by half of the number
-     * of leaves of the tree (for the node dimension).
+     * Each node in the tree will have an entry: turn[level][node], where the
+     * size of turn is the height of the tree (for level dimension) by half of
+     * the number of leaves of the tree (for the node dimension).
+     * 
+     * Array entries need to be AtomicIntegers, so that reads and writes of an
+     * array entry are atomic:
+     * //stackoverflow.com/questions/2236184/how-to-declare-array-elements-volatile-in-java
      */
-    private volatile int[][] turn;
+    private volatile AtomicInteger[][] turn;
 
     public TournamentLock(int numThreads) {
-        // your implementation goes here.
+        //System.out.println("TournamentLock: numThreads = " + numThreads);
+
+        // Check we have a valid number of threads
+        if (numThreads <= 1) {
+            throw new IllegalArgumentException(
+                "Invalid number of threads: numThreads must be >1");
+        }
 
         // Initialize n to the smallest power of 2 larger or equal to numThreads
         double p = Math.ceil(Math.log((double) numThreads) / Math.log(2.0));
         this.n = (int) Math.pow(2.0, p);
-        // System.out.println("TournamentLock: n = " + this.n);
+        //System.out.println("TournamentLock: n = " + this.n);
 
         // Initialize hTree
         this.hTree = (int) Math.floor(Math.log((double) this.n) / Math.log(2.0)); // Binary tree height
-        // System.out.println("TournamentLock: hTree = " + hTree);
+        //System.out.println("TournamentLock: hTree = " + hTree);
 
-        // Initialize b array
-        this.wantCS = new boolean[this.hTree][this.n];
-        for (boolean[] row : this.wantCS) {
-            Arrays.fill(row, false);
+        // Initialize wantCS array
+        this.wantCS = new AtomicBoolean[this.hTree][this.n];
+        //System.out.println("TournamentLock: wantCS = ");
+        for (AtomicBoolean[] row : this.wantCS) {
+            //System.out.print("[ ");
+            for (int i=0; i<row.length; i++) {
+                row[i] = new AtomicBoolean(false);
+
+                /*
+                if (i == row.length-1) {
+                    System.out.println(row[i].get() + " ]");
+                } else {
+                    System.out.print(row[i].get() + ", ");
+                }
+                */
+            }
         }
 
         // Initialize turn array
-        this.turn = new int[this.hTree][this.n / 2];
+        this.turn = new AtomicInteger[this.hTree][this.n / 2];
+        //System.out.println("TournamentLock: turn =");
+        for (AtomicInteger[] row : this.turn) {
+            //System.out.print("[ ");
+            for (int i=0; i<row.length; i++) {
+                row[i] = new AtomicInteger(0);
+
+                /*
+                if (i == row.length-1) {
+                    System.out.println(row[i].get() + " ]");
+                } else {
+                    System.out.print(row[i].get() + ", ");
+                }
+                */
+            }
+        }
     }
 
     /**
@@ -73,31 +116,34 @@ public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
      */
     public void lock(int tid) {
         // System.out.println("Thread-" + tid + ": locking...");
-        int level, id, idJ;
+        int level, id, idj;
         int node = tid; // Starting node (leave) is the thread ID
 
         // Iterate over all the levels of the tree to contest other threads
         for (level = 0; level < this.hTree; level++) {
             id = node % 2; // Find if process 0 or 1 for Peterson's contest
-            idJ = 1 - id; // Id of other thread in the contest
+            idj = 1 - id; // Id of other thread in the contest
             node = Math.floorDiv(node, 2); // Find next node
 
-            this.wantCS[level][2 * node + id] = true; // Say we want to enter the CS
-            this.turn[level][node] = idJ; // Set the turn to the other thread in the contest
+            // Say we want to enter the CS
+            this.wantCS[level][2 * node + id].set(true);
+            // Set the turn to the other thread in the contest
+            this.turn[level][node].set(idj);
 
             // Busy wait until we win the contest
-            while (this.wantCS[level][2 * node + idJ] && (this.turn[level][node] == idJ)) {
+            while (this.wantCS[level][2 * node + idj].get()
+                && (this.turn[level][node].get() == idj)) {
                 // Do nothing
 
                 // DO NOT DELETE!!! For some reason the lock does not work
                 // properly without this print statement.
-                System.out.print("");
+                //System.out.print("");
             }
         }
         
         // DO NOT DELETE!!! For some reason the lock does not work properly
         // without this print statement.
-        System.out.print("");
+        //System.out.print("");
     }
 
     /** Unlock or exit protocol method
@@ -118,7 +164,7 @@ public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
             node = Math.floorDiv(tid, (int)Math.pow(2.0, (double)(level+1)));
 
             // Reset wantCS entry
-            this.wantCS[level][2*node+id] = false;
+            this.wantCS[level][2*node+id].set(false);
         }
     }
 }
