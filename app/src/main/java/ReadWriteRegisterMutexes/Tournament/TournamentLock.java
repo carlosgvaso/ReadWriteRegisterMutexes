@@ -1,15 +1,17 @@
+/**
+ * TournamentLock is a lock implementation of the Peterson's Tournament Algorithm
+ * 
+ * This implementation is based on the pseudo-code from the Synchronization
+ * Algorithms and Concurrent Programming textbook by Gadi Taubenfeld at page 38.
+ */
 package ReadWriteRegisterMutexes.Tournament;
 
 import java.lang.Math;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * TournamentLock class implements the Peterson's Tournament algorithm
- * 
- * This implementation is based on the pseudo-code from the Synchronization
- * Algorithms and Concurrent Programming textbook by Gadi Taubenfeld at page 38.
+ * TournamentLock class implements the Peterson's Tournament algorithm for locks
  */
 public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
     // Shared variables
