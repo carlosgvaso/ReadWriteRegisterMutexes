@@ -22,6 +22,10 @@ dependencies {
 
     // This dependency is used by the application.
     implementation("com.google.guava:guava:29.0-jre")
+
+    // JMH for benchmarks
+    implementation("org.openjdk.jmh:jmh-core:1.26")
+    annotationProcessor("org.openjdk.jmh:jmh-generator-annprocess:1.26")
 }
 
 application {
