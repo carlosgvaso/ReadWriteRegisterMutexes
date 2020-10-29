@@ -25,12 +25,12 @@ public class TournamentLockTest {
 
         // Initialize workers
         for (int i=0; i< numWorkers; i++) {
-            // Even workers add, odd workers substract
+            // Even workers add, odd workers subtract
             workers[i] = new WorkerThread((((i%2) == 0) ? true : false), i);
         }
 
         WorkerThread.c = 0;
-        WorkerThread.increments = 100000;
+        WorkerThread.increments = 1000000;
         WorkerThread.lock = lock;
 
         // Spawn threads
