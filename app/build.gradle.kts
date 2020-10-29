@@ -18,7 +18,8 @@ repositories {
 
 dependencies {
     // Use JUnit test framework.
-    testImplementation("junit:junit:4.13")
+    testImplementation("junit:junit:4.13.1")
+    testImplementation("org.hamcrest:hamcrest-core:1.3")
 
     // This dependency is used by the application.
     implementation("com.google.guava:guava:29.0-jre")
