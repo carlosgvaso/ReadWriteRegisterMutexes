@@ -10,27 +10,24 @@ import java.lang.Math;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * TournamentLock class implements the Peterson's Tournament algorithm for locks
+/** TournamentLock class implements the Peterson's Tournament algorithm for locks
  */
 public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
-    // Shared variables
-    /**
-     * Number of threads or leaves of the tournament tree
+    /** Number of threads or leaves of the tournament tree
      * 
      * This must be a power of 2. If n is not a power of 2, "dummy" threads that
      * do nothing must be added to make it a power of 2.
      */
     private int n;
-    /**
-     * Height of the tournament tree
+
+    /** Height of the tournament tree
      * 
      * It is obtained from n.
      */
     private int hTree;
-    /**
-     * Shared variable that indicates if a process wants to access the CS in
-     * each node contest
+
+    /** Shared variable that indicates if a process wants to access the CS in
+     *  each node contest
      * 
      * Both registers for process 0 and 1 in each tournament are stored in the
      * same array. This way each node in the tree will have 2 entries:
@@ -43,8 +40,8 @@ public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
      * //stackoverflow.com/questions/2236184/how-to-declare-array-elements-volatile-in-java
      */
     private volatile AtomicBoolean[][] wantCS;
-    /**
-     * Shared variable that indicates the turn in each node contest
+
+    /** Shared variable that indicates the turn in each node contest
      * 
      * Each node in the tree will have an entry: turn[level][node], where the
      * size of turn is the height of the tree (for level dimension) by half of
@@ -56,13 +53,17 @@ public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
      */
     private volatile AtomicInteger[][] turn;
 
+    /** Constructor
+     * 
+     * @param numThreads    Number of threads using the lock
+     */
     public TournamentLock(int numThreads) {
         //System.out.println("TournamentLock: numThreads = " + numThreads);
 
         // Check we have a valid number of threads
-        if (numThreads <= 1) {
+        if (numThreads <= 0) {
             throw new IllegalArgumentException(
-                "Invalid number of threads: numThreads must be >1");
+                "Invalid number of threads: numThreads must be >0");
         }
 
         // Initialize n to the smallest power of 2 larger or equal to numThreads
@@ -111,8 +112,7 @@ public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
         }
     }
 
-    /**
-     * Lock or entry protocol method
+    /** Lock or entry protocol method
      * 
      * @param tid Thread ID
      */
