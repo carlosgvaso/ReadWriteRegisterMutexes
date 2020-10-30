@@ -21,22 +21,37 @@ import ReadWriteRegisterMutexes.Tournament.TournamentLock;
  * It runs benchmarks for all the implemented read-write register locks.
  */
 public class App {
-    /** Benchmark the TournamentLock for threads incrementing a shared variable
+    /** Global setting for increments in the benchmarks
+     */
+    //private static int gIncrements = 50000000;
+    private static int gIncrements = 1000000;
+
+    /** Global setting for number of threads on benchmarks with heavy contention
+     */
+    private static int gHeavyContentionThreadNum = 8;
+
+    /** Global setting for number of threads on benchmarks with no contention
+     */
+    private static int gNoContentionThreadNum = 1;
+
+    /** Benchmark the TournamentLock for 1 thread incrementing a shared variable
      * 
-     * The benchmark measures the average time that 8 worker threads take to
-     * increment/decrement a shared variable 50,000,000 times. Half of the
-     * threads will increment the shared variable by 1 each time in a loop, and
-     * the other half will decrement it by 1 each time in a loop. Each time that
-     * any of the threads wants to increment/decrement the shared variable, they
-     * must request the lock, and they release the lock immediately after. 
+     * The benchmark measures the average time that 1 worker thread takes to
+     * increment a shared variable 50,000,000 times. Each time that the thread
+     * wants to increment the shared variable, it musts request the lock, and it
+     * releases the lock immediately after.
+     * 
+     * This benchmark is designed to measure how much overhead this lock
+     * implementation adds to the operation without any contention.
      */
     @Benchmark
     @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
     @Fork(value = 1) // Run 1 fork with no warmup forks
     //@Warmup(iterations=2) // Run that number of warmup iterations
     @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
-    public void incrementTournamentLock() {
-        int numWorkers = 8;
+    public void noContentionTournamentLock() {
+        int numWorkers = gNoContentionThreadNum;
+        int increments = gIncrements;
         TournamentLock lock = new TournamentLock(numWorkers);
         Runnable[] workers = new Runnable[numWorkers];
         Thread[] threads = new Thread[numWorkers];
@@ -44,12 +59,12 @@ public class App {
         // Initialize workers
         for (int i=0; i< numWorkers; i++) {
             // Even workers add, odd workers subtract
-            workers[i] = new WorkerThread((((i%2) == 0) ? true : false), i);
+            workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
+                increments, lock);
         }
 
-        WorkerThread.c = 0;
-        WorkerThread.increments = 50000000;
-        WorkerThread.lock = lock;
+        // Initialize the shared counter c
+        ((Worker)workers[0]).setC(0);
 
         // Spawn threads
         for (int i=0; i<numWorkers; i++) {
@@ -71,7 +86,66 @@ public class App {
         }
 
         // Check we got the right result
-        System.out.println("Finished: c = " + WorkerThread.c + " expected 0");
+        //System.out.println("Finished: c = " + ((Worker)workers[0]).getC()
+        //    + " expected 0");
+    }
+
+    /** Benchmark the TournamentLock for threads incrementing a shared variable
+     * 
+     * The benchmark measures the average time that 8 worker threads take to
+     * increment/decrement a shared variable 50,000,000 times. Half of the
+     * threads will increment the shared variable by 1 each time in a loop, and
+     * the other half will decrement it by 1 each time in a loop. Each time that
+     * any of the threads wants to increment/decrement the shared variable, they
+     * must request the lock, and they release the lock immediately after.
+     * 
+     * This benchmark is designed to measure how well this lock implementation
+     * performs under heavy contention.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void heavyContentionTournamentLock() {
+        int numWorkers = gHeavyContentionThreadNum;
+        int increments = gIncrements;
+        TournamentLock lock = new TournamentLock(numWorkers);
+        Runnable[] workers = new Runnable[numWorkers];
+        Thread[] threads = new Thread[numWorkers];
+
+        // Initialize workers
+        for (int i=0; i< numWorkers; i++) {
+            // Even workers add, odd workers subtract
+            workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
+                increments, lock);
+        }
+
+        // Initialize the shared counter c
+        ((Worker)workers[0]).setC(0);
+
+        // Spawn threads
+        for (int i=0; i<numWorkers; i++) {
+            threads[i] = new Thread(workers[i], "T" + i);
+        }
+
+        // Start threads
+        for (int i=0; i<numWorkers; i++) {
+            threads[i].start();
+        }
+
+        // Wait for threads to terminate
+        for (int i=0; i<numWorkers; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                System.out.println("ERROR: T" + i + ": " + e);
+            }
+        }
+
+        // Check we got the right result
+        //System.out.println("Finished: c = " + ((Worker)workers[0]).getC()
+        //    + " expected 0");
     }
 
     /** Entry point of the App class
@@ -88,36 +162,3 @@ public class App {
     }
 }
 
-/** Worker thread class to increment/decrement a shared counter
- */
-class WorkerThread implements Runnable {
-    public volatile static int c;
-    public volatile static int increments;
-    public volatile static TournamentLock lock;
-    public boolean add;
-    public int tid;
-
-    /** Constructor
-     */
-    public WorkerThread(boolean add, int tid) {
-        this.add = add;
-        this.tid = tid;
-    }
-
-    /** Increment/decrement shared counter
-     */
-    public void run() {
-        // Increment instance variable c the configured number of times
-        for (int i=0; i<WorkerThread.increments; i++) {
-            if (this.add) {
-                WorkerThread.lock.lock(this.tid);
-                WorkerThread.c++;
-                WorkerThread.lock.unlock(this.tid);
-            } else {
-                WorkerThread.lock.lock(this.tid);
-                WorkerThread.c--;
-                WorkerThread.lock.unlock(this.tid);
-            }
-        }
-    }
-}
