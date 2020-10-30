@@ -34,6 +34,61 @@ public class App {
      */
     private static int gNoContentionThreadNum = 1;
 
+    /** Benchmark without lock for 1 thread incrementing a shared variable
+     * 
+     * The benchmark measures the average time that 1 worker thread takes to
+     * increment a shared variable 50,000,000 times. This benchmark doesn't use
+     * a lock.
+     * 
+     * This benchmark is designed to measure how much overhead other lock
+     * implementations add to the operation without any contention. This is the
+     * reference benchmark of the operation without using a lock.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void noContentionNoLock() {
+        int numWorkers = gNoContentionThreadNum;
+        int increments = gIncrements;
+        Runnable[] workers = new Runnable[numWorkers];
+        Thread[] threads = new Thread[numWorkers];
+
+        // Initialize workers
+        for (int i=0; i< numWorkers; i++) {
+            // Even workers add, odd workers subtract
+            workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
+                increments);
+        }
+
+        // Initialize the shared counter c
+        ((Worker)workers[0]).setC(0);
+
+        // Spawn threads
+        for (int i=0; i<numWorkers; i++) {
+            threads[i] = new Thread(workers[i], "T" + i);
+        }
+
+        // Start threads
+        for (int i=0; i<numWorkers; i++) {
+            threads[i].start();
+        }
+
+        // Wait for threads to terminate
+        for (int i=0; i<numWorkers; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                System.out.println("ERROR: T" + i + ": " + e);
+            }
+        }
+
+        // Check we got the right result
+        //System.out.println("Finished: c = " + ((Worker)workers[0]).getC()
+        //    + " expected 0");
+    }
+
     /** Benchmark the TournamentLock for 1 thread incrementing a shared variable
      * 
      * The benchmark measures the average time that 1 worker thread takes to
