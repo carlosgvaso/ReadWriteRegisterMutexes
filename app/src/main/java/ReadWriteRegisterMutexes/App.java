@@ -35,173 +35,6 @@ public class App {
      */
     private static int gNoContentionThreadNum = 1;
 
-    /** Benchmark without a lock for 1 thread incrementing a shared variable
-     * 
-     * The benchmark measures the average time that 1 worker thread takes to
-     * increment a shared variable 50,000,000 times. This benchmark doesn't use
-     * a lock.
-     * 
-     * This benchmark is designed to measure how much overhead other lock
-     * implementations add to the operation without any contention. This is the
-     * reference benchmark of the operation without using a lock.
-     */
-    @Benchmark
-    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
-    @Fork(value = 1) // Run 1 fork with no warmup forks
-    //@Warmup(iterations=2) // Run that number of warmup iterations
-    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
-    public void noContentionNoLock() {
-        int numWorkers = gNoContentionThreadNum;
-        int increments = gIncrements;
-        Runnable[] workers = new Runnable[numWorkers];
-        Thread[] threads = new Thread[numWorkers];
-
-        // Initialize workers
-        for (int i=0; i< numWorkers; i++) {
-            // Even workers add, odd workers subtract
-            workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
-                increments);
-        }
-
-        // Initialize the shared counter c
-        ((Worker)workers[0]).setC(0);
-
-        // Spawn threads
-        for (int i=0; i<numWorkers; i++) {
-            threads[i] = new Thread(workers[i], "T" + i);
-        }
-
-        // Start threads
-        for (int i=0; i<numWorkers; i++) {
-            threads[i].start();
-        }
-
-        // Wait for threads to terminate
-        for (int i=0; i<numWorkers; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException e) {
-                System.out.println("ERROR: T" + i + ": " + e);
-            }
-        }
-
-        // Check we got the right result
-        //System.out.println("Finished: c = " + ((Worker)workers[0]).getC()
-        //    + " expected 0");
-    }
-
-    /** Benchmark the ReentrantLock for 1 thread incrementing a shared variable
-     * 
-     * The benchmark measures the average time that 1 worker thread takes to
-     * increment a shared variable 50,000,000 times. Each time that the thread
-     * wants to increment the shared variable, it musts request the lock, and it
-     * releases the lock immediately after.
-     * 
-     * This benchmark is designed to measure how much overhead this lock
-     * implementation adds to the operation without any contention.
-     */
-    @Benchmark
-    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
-    @Fork(value = 1) // Run 1 fork with no warmup forks
-    //@Warmup(iterations=2) // Run that number of warmup iterations
-    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
-    public void noContentionReentrantLock() {
-        int numWorkers = gNoContentionThreadNum;
-        int increments = gIncrements;
-        ReentrantLock lock = new ReentrantLock();
-        Runnable[] workers = new Runnable[numWorkers];
-        Thread[] threads = new Thread[numWorkers];
-
-        // Initialize workers
-        for (int i=0; i< numWorkers; i++) {
-            // Even workers add, odd workers subtract
-            workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
-                increments, lock);
-        }
-
-        // Initialize the shared counter c
-        ((Worker)workers[0]).setC(0);
-
-        // Spawn threads
-        for (int i=0; i<numWorkers; i++) {
-            threads[i] = new Thread(workers[i], "T" + i);
-        }
-
-        // Start threads
-        for (int i=0; i<numWorkers; i++) {
-            threads[i].start();
-        }
-
-        // Wait for threads to terminate
-        for (int i=0; i<numWorkers; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException e) {
-                System.out.println("ERROR: T" + i + ": " + e);
-            }
-        }
-
-        // Check we got the right result
-        //System.out.println("Finished: c = " + ((Worker)workers[0]).getC()
-        //    + " expected 0");
-    }
-
-    /** Benchmark the TournamentLock for 1 thread incrementing a shared variable
-     * 
-     * The benchmark measures the average time that 1 worker thread takes to
-     * increment a shared variable 50,000,000 times. Each time that the thread
-     * wants to increment the shared variable, it musts request the lock, and it
-     * releases the lock immediately after.
-     * 
-     * This benchmark is designed to measure how much overhead this lock
-     * implementation adds to the operation without any contention.
-     */
-    @Benchmark
-    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
-    @Fork(value = 1) // Run 1 fork with no warmup forks
-    //@Warmup(iterations=2) // Run that number of warmup iterations
-    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
-    public void noContentionTournamentLock() {
-        int numWorkers = gNoContentionThreadNum;
-        int increments = gIncrements;
-        TournamentLock lock = new TournamentLock(numWorkers);
-        Runnable[] workers = new Runnable[numWorkers];
-        Thread[] threads = new Thread[numWorkers];
-
-        // Initialize workers
-        for (int i=0; i< numWorkers; i++) {
-            // Even workers add, odd workers subtract
-            workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
-                increments, lock);
-        }
-
-        // Initialize the shared counter c
-        ((Worker)workers[0]).setC(0);
-
-        // Spawn threads
-        for (int i=0; i<numWorkers; i++) {
-            threads[i] = new Thread(workers[i], "T" + i);
-        }
-
-        // Start threads
-        for (int i=0; i<numWorkers; i++) {
-            threads[i].start();
-        }
-
-        // Wait for threads to terminate
-        for (int i=0; i<numWorkers; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException e) {
-                System.out.println("ERROR: T" + i + ": " + e);
-            }
-        }
-
-        // Check we got the right result
-        //System.out.println("Finished: c = " + ((Worker)workers[0]).getC()
-        //    + " expected 0");
-    }
-
     /** Benchmark the ReentrantLock for threads incrementing a shared variable
      * 
      * The benchmark measures the average time that 8 worker threads take to
@@ -220,44 +53,9 @@ public class App {
     //@Warmup(iterations=2) // Run that number of warmup iterations
     @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
     public void heavyContentionReentrantLock() {
-        int numWorkers = gHeavyContentionThreadNum;
-        int increments = gIncrements;
-        ReentrantLock lock = new ReentrantLock();
-        Runnable[] workers = new Runnable[numWorkers];
-        Thread[] threads = new Thread[numWorkers];
-
-        // Initialize workers
-        for (int i=0; i< numWorkers; i++) {
-            // Even workers add, odd workers subtract
-            workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
-                increments, lock);
-        }
-
-        // Initialize the shared counter c
-        ((Worker)workers[0]).setC(0);
-
-        // Spawn threads
-        for (int i=0; i<numWorkers; i++) {
-            threads[i] = new Thread(workers[i], "T" + i);
-        }
-
-        // Start threads
-        for (int i=0; i<numWorkers; i++) {
-            threads[i].start();
-        }
-
-        // Wait for threads to terminate
-        for (int i=0; i<numWorkers; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException e) {
-                System.out.println("ERROR: T" + i + ": " + e);
-            }
-        }
-
-        // Check we got the right result
-        //System.out.println("Finished: c = " + ((Worker)workers[0]).getC()
-        //    + " expected 0");
+        ReentrantLock lockBench = new ReentrantLock();
+        runIncrementBenchmark(gHeavyContentionThreadNum, gIncrements,
+            lockBench);
     }
 
     /** Benchmark the TournamentLock for threads incrementing a shared variable
@@ -278,17 +76,134 @@ public class App {
     //@Warmup(iterations=2) // Run that number of warmup iterations
     @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
     public void heavyContentionTournamentLock() {
-        int numWorkers = gHeavyContentionThreadNum;
-        int increments = gIncrements;
-        TournamentLock lock = new TournamentLock(numWorkers);
+        TournamentLock lockBench = new TournamentLock(gHeavyContentionThreadNum);
+        runIncrementBenchmark(gHeavyContentionThreadNum, gIncrements,
+            lockBench);
+    }
+
+    /** Entry point of the App class
+     * 
+     * It runs benchmarks for all the implemented read-write register locks.
+     */
+    public static void main(String[] args) {
+        // Run the benchmarks
+        try {
+            org.openjdk.jmh.Main.main(args);
+        } catch (IOException e) {
+            System.out.println("ERROR: " + e);
+        }
+    }
+
+    /** Benchmark without a lock for 1 thread incrementing a shared variable
+     * 
+     * The benchmark measures the average time that 1 worker thread takes to
+     * increment a shared variable 50,000,000 times. This benchmark doesn't use
+     * a lock.
+     * 
+     * This benchmark is designed to measure how much overhead other lock
+     * implementations add to the operation without any contention. This is the
+     * reference benchmark of the operation without using a lock.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void noContentionNoLock() {
+        runIncrementBenchmark(gNoContentionThreadNum, gIncrements, null);
+    }
+
+    /** Benchmark the ReentrantLock for 1 thread incrementing a shared variable
+     * 
+     * The benchmark measures the average time that 1 worker thread takes to
+     * increment a shared variable 50,000,000 times. Each time that the thread
+     * wants to increment the shared variable, it musts request the lock, and it
+     * releases the lock immediately after.
+     * 
+     * This benchmark is designed to measure how much overhead this lock
+     * implementation adds to the operation without any contention.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void noContentionReentrantLock() {
+        ReentrantLock lockBench = new ReentrantLock();
+        runIncrementBenchmark(gNoContentionThreadNum, gIncrements,
+            lockBench);
+    }
+
+    /** Benchmark the TournamentLock for 1 thread incrementing a shared variable
+     * 
+     * The benchmark measures the average time that 1 worker thread takes to
+     * increment a shared variable 50,000,000 times. Each time that the thread
+     * wants to increment the shared variable, it musts request the lock, and it
+     * releases the lock immediately after.
+     * 
+     * This benchmark is designed to measure how much overhead this lock
+     * implementation adds to the operation without any contention.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void noContentionTournamentLock() {
+        TournamentLock lockBench = new TournamentLock(gNoContentionThreadNum);
+        runIncrementBenchmark(gNoContentionThreadNum, gIncrements,
+            lockBench);
+    }
+
+    /** Run the increment a shared counter a set number of times per thread
+     *  operation to benchmark
+     * 
+     * This benchmark operation consists of incrementing/decrementing by one a
+     * shared counter by one or multiple threads. Even threads (starting from 0)
+     * increment the counter, and odd threads decrement the counter. Depending
+     * on the lock object passed, each increment/decrement operation is
+     * synchronized by locking before incrementing/decrementing, and locking
+     * immediately after it. This increment/decrement operation is repeated a
+     * configured number of times.
+     * 
+     * @param numWorkers    Number of worker threads
+     * @param increments    Number of increments/decrements per thread
+     * @param lockObj   Lock object of type Lock or ReentrantLock, or null
+     */
+    private void runIncrementBenchmark(int numWorkers, int increments, Object lockObj) {
         Runnable[] workers = new Runnable[numWorkers];
         Thread[] threads = new Thread[numWorkers];
 
-        // Initialize workers
-        for (int i=0; i< numWorkers; i++) {
-            // Even workers add, odd workers subtract
-            workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
-                increments, lock);
+        if (lockObj == null) {
+            // No lock
+            // Initialize workers
+            for (int i=0; i< numWorkers; i++) {
+                // Even workers add, odd workers subtract
+                workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
+                    increments);
+            }
+        } else if (lockObj instanceof Lock) {
+            // Lock interface
+            Lock lock = (Lock) lockObj;
+
+            // Initialize workers
+            for (int i=0; i< numWorkers; i++) {
+                // Even workers add, odd workers subtract
+                workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
+                    increments, lock);
+            }
+        } else if (lockObj instanceof ReentrantLock) {
+            // ReentrantLock
+            ReentrantLock lock = (ReentrantLock) lockObj;
+
+            // Initialize workers
+            for (int i=0; i< numWorkers; i++) {
+                // Even workers add, odd workers subtract
+                workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
+                    increments, lock);
+            }
+        } else {
+            throw new IllegalArgumentException("ERROR: Unknown type of lock");
         }
 
         // Initialize the shared counter c
@@ -317,18 +232,4 @@ public class App {
         //System.out.println("Finished: c = " + ((Worker)workers[0]).getC()
         //    + " expected 0");
     }
-
-    /** Entry point of the App class
-     * 
-     * It runs benchmarks for all the implemented read-write register locks.
-     */
-    public static void main(String[] args) {
-        // Run the benchmarks
-        try {
-            org.openjdk.jmh.Main.main(args);
-        } catch (IOException e) {
-            System.out.println("ERROR: " + e);
-        }
-    }
 }
-
