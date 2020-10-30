@@ -24,8 +24,7 @@ import ReadWriteRegisterMutexes.Tournament.TournamentLock;
 public class App {
     /** Global setting for increments in the benchmarks
      */
-    //private static int gIncrements = 50000000;
-    private static int gIncrements = 1000000;
+    private static int gIncrements = 50000000;
 
     /** Global setting for number of threads on benchmarks with heavy contention
      */
