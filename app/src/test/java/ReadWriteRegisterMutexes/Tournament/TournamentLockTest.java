@@ -7,10 +7,11 @@ import static org.junit.Assert.*;
 
 import java.lang.Runnable;
 import java.util.concurrent.locks.ReentrantLock;
+
+import ReadWriteRegisterMutexes.Worker;
 import ReadWriteRegisterMutexes.Tournament.TournamentLock;
 
 public class TournamentLockTest {
-
     /** Test the TournamentLock by incrementing the c shared variable 1,000,000
      * times while concurrently decrementing it another 1,000,000 times. There
      * is no guarantee of the atomicity of the increments or decrements except
@@ -19,6 +20,7 @@ public class TournamentLockTest {
     @Test
     public void testTournamentLockIncrement() {
         int numWorkers = 8;
+        int increments = 1000000;
         TournamentLock lock = new TournamentLock(numWorkers);
         Runnable[] workers = new Runnable[numWorkers];
         Thread[] threads = new Thread[numWorkers];
@@ -26,12 +28,12 @@ public class TournamentLockTest {
         // Initialize workers
         for (int i=0; i< numWorkers; i++) {
             // Even workers add, odd workers subtract
-            workers[i] = new WorkerThread((((i%2) == 0) ? true : false), i);
+            workers[i] = new Worker(i, (((i%2) == 0) ? true : false),
+                increments, lock);
         }
 
-        WorkerThread.c = 0;
-        WorkerThread.increments = 1000000;
-        WorkerThread.lock = lock;
+        // Initialize the shared counter c
+        ((Worker)workers[0]).setC(0);
 
         // Spawn threads
         for (int i=0; i<numWorkers; i++) {
@@ -53,44 +55,8 @@ public class TournamentLockTest {
         }
 
         // Check we got the right result
-        assertEquals("Synchronization error: ", 0, WorkerThread.c);
-        System.out.println("Success: c = " + WorkerThread.c + " expected 0");
-    }
-}
-
-class WorkerThread implements Runnable {
-    public volatile static int c;
-    public volatile static int increments;
-    public volatile static TournamentLock lock;
-    public boolean add;
-    public int tid;
-
-    public WorkerThread(boolean add, int tid) {
-        this.add = add;
-        this.tid = tid;
-    }
-
-    public void run() {
-        int workerIncs = 0; // Number of incs/decs this worker did
-
-        // Increment instance variable c the configured number of times
-        for (int i=0; i<WorkerThread.increments; i++) {
-            if (this.add) {
-                WorkerThread.lock.lock(this.tid);
-                WorkerThread.c++;
-                //System.out.println(Thread.currentThread().getName() + ": Incremented c: " + c);
-                WorkerThread.lock.unlock(this.tid);
-            } else {
-                WorkerThread.lock.lock(this.tid);
-                WorkerThread.c--;
-                //System.out.println(Thread.currentThread().getName() + ": Decremented c: " + c);
-                WorkerThread.lock.unlock(this.tid);
-            }
-            workerIncs++;
-        }
-
-        System.out.println("T" + this.tid
-            + ((this.add) ? " increments: " : " decrements: ")
-            + workerIncs);
+        assertEquals("Synchronization error: ", 0, ((Worker)workers[0]).getC());
+        System.out.println("Success: c = " + ((Worker)workers[0]).getC()
+            + " expected 0");
     }
 }
