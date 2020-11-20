@@ -21,3 +21,5 @@ gradle-app.setting
 # JVM crash files
 *.hprof
 
+# Ignore VS Code configuration directory
+.vscode
