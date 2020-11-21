@@ -73,16 +73,6 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
      */
     private int[] level;
 
-    /** Current win status of the threads
-     * 
-     * Local variable (each entry is accessed only by one thread). The ith entry
-     * contains the win status for the ith thread.
-     * 
-     * TODO: We might not need this array, and we can use a local variable in
-     * the lock() method instead.
-     */
-    private boolean[] win;
-
     /** Constructor
      * 
      * @param numThreads    Number of threads using the lock
@@ -98,7 +88,6 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
         this.z = new AtomicBoolean[this.infArrSize];
         this.b = new AtomicBoolean[this.infArrSize];
         this.level = new int[this.n];
-        this.win = new boolean[this.n];
 
         for (int i=0; i<this.infArrSize; i++) {
             this.x[i] = new AtomicInteger(0);
@@ -109,7 +98,6 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
 
         for (int i=0; i<this.n; i++) {
             this.level[i] = 0;
-            this.win[i] = false;
         }
     }
 
@@ -120,16 +108,14 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
      * @param tid Thread ID
      */
     public void lock(int tid) {
-        //System.out.println("Thread-" + tid + ": locking...");
-
         // Enter the chain (list) of splitters
         // start: level := next
         // This part was moved, see START comment
         boolean start = true;
-        this.win[tid] = false;  // Ensure we run the while loop at least once
+        boolean win = false;  // Ensure we run the while loop at least once
 
         // repeat
-        while (!this.win[tid]) {
+        while (!win) {
             // START
             // Since Java does not support the `goto` statement used in the
             // algorithm pseudo-code, we use the boolean variable start to run
@@ -141,7 +127,6 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
             if (start) {
                 start = false;
                 this.level[tid] = this.next.get();
-                //System.out.println("T" + tid + " got level from next: " + this.level[tid]);
 
                 if (this.level[tid] >= this.infArrSize) {
                     System.out.println("T" +tid + " reached last level: " + this.level[tid]);
@@ -192,7 +177,6 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
                     // Move down
                     // level := level + 1
                     this.level[tid] = this.level[tid] + 1;
-                    //System.out.println("T" + tid + "increased level: " + this.level[tid]);
 
                     if (this.level[tid] >= this.infArrSize) {
                         System.out.println("T" +tid + " reached last level: " + this.level[tid]);
@@ -206,13 +190,11 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
                 if (!this.b[this.level[tid]].get()) {
                     // Win
                     // win := 1
-                    this.win[tid] = true;
-                    //System.out.println("T" + tid + " won");
+                    win = true;
                 } else { // else
                     // Move down
                     // level := level + 1
                     this.level[tid] = this.level[tid] + 1;
-                    //System.out.println("T" + tid + "increased level: " + this.level[tid]);
 
                     if (this.level[tid] >= this.infArrSize) {
                         System.out.println("T" +tid + " reached last level: " + this.level[tid]);
@@ -220,7 +202,6 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
                 } // fi
             } // fi
         } // until win = 1
-        //System.out.println("T" + tid + " in critical section");
     }
 
     /** Unlock or exit protocol method
@@ -228,12 +209,8 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
      * @param   tid Thread ID
      */
     public void unlock(int tid) {
-        //System.out.println("Thread-" + tid + ": unlocking...");
-        //System.out.println("T" + tid + " out of critical section");
-
         // Exit
         // next := level + 1
         this.next.set(this.level[tid] + 1);
-        //System.out.println("T" + tid + " next: " + this.next.get());
     }
 }
