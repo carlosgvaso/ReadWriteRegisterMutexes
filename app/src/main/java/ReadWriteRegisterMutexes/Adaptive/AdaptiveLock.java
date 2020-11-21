@@ -77,6 +77,9 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
      * 
      * Local variable (each entry is accessed only by one thread). The ith entry
      * contains the win status for the ith thread.
+     * 
+     * TODO: We might not need this array, and we can use a local variable in
+     * the lock() method instead.
      */
     private boolean[] win;
 
@@ -94,20 +97,25 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
         this.y = new AtomicBoolean[this.infArrSize];
         this.z = new AtomicBoolean[this.infArrSize];
         this.b = new AtomicBoolean[this.infArrSize];
-        this.level = new int[this.infArrSize];
-        this.win = new boolean[this.infArrSize];
+        this.level = new int[this.n];
+        this.win = new boolean[this.n];
 
         for (int i=0; i<this.infArrSize; i++) {
             this.x[i] = new AtomicInteger(0);
             this.y[i] = new AtomicBoolean(false);
             this.z[i] = new AtomicBoolean(false);
             this.b[i] = new AtomicBoolean(false);
+        }
+
+        for (int i=0; i<this.n; i++) {
             this.level[i] = 0;
             this.win[i] = false;
         }
     }
 
     /** Lock or entry protocol method
+     * 
+     * TODO: Add other lock for when we reach the last level
      * 
      * @param tid Thread ID
      */
@@ -118,6 +126,7 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
         // start: level := next
         // This part was moved, see START comment
         boolean start = true;
+        this.win[tid] = false;  // Ensure we run the while loop at least once
 
         // repeat
         while (!this.win[tid]) {
@@ -130,8 +139,13 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
             // variable to true and a `continue` statement, which has the same
             // behavior as the `goto start`.
             if (start) {
-                this.level[tid] = this.next.get();
                 start = false;
+                this.level[tid] = this.next.get();
+                //System.out.println("T" + tid + " got level from next: " + this.level[tid]);
+
+                if (this.level[tid] >= this.infArrSize) {
+                    System.out.println("T" +tid + " reached last level: " + this.level[tid]);
+                }
             }
 
             // x[level] := i
@@ -143,7 +157,7 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
                 this.b[this.level[tid]].set(true);
 
                 // await level < next
-                while (!(this.level[tid] < this.next.get())) {
+                while ( !( this.level[tid] < this.next.get() ) ) {
                     System.out.print(""); // Do nothing
                 }
 
@@ -158,8 +172,8 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
             // if x[level] != i then
             if (this.x[this.level[tid]].get() != tid) {
                 // await (b[level] = 1) or (z[level] = 1)
-                while (!(this.b[this.level[tid]].get()
-                        || this.z[this.level[tid]].get())) {
+                while ( !( this.b[this.level[tid]].get() ||
+                           this.z[this.level[tid]].get() ) ) {
                     System.out.print(""); // Do nothing
                 }
 
@@ -167,8 +181,8 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
                 if (this.z[this.level[tid]].get()) {
                     // Move right
                     // await level < next
-                    while (!(this.level[tid] < this.next.get())) {
-                        System.out.print("");
+                    while ( !( this.level[tid] < this.next.get() ) ) {
+                        System.out.print(""); // Do nothing
                     }
 
                     // goto start
@@ -178,6 +192,11 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
                     // Move down
                     // level := level + 1
                     this.level[tid] = this.level[tid] + 1;
+                    //System.out.println("T" + tid + "increased level: " + this.level[tid]);
+
+                    if (this.level[tid] >= this.infArrSize) {
+                        System.out.println("T" +tid + " reached last level: " + this.level[tid]);
+                    }
                 } // fi
             } else { // else
                 // z[level] := 1
@@ -188,13 +207,20 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
                     // Win
                     // win := 1
                     this.win[tid] = true;
+                    //System.out.println("T" + tid + " won");
                 } else { // else
                     // Move down
-                    // level := levle + 1
+                    // level := level + 1
                     this.level[tid] = this.level[tid] + 1;
+                    //System.out.println("T" + tid + "increased level: " + this.level[tid]);
+
+                    if (this.level[tid] >= this.infArrSize) {
+                        System.out.println("T" +tid + " reached last level: " + this.level[tid]);
+                    }
                 } // fi
             } // fi
         } // until win = 1
+        //System.out.println("T" + tid + " in critical section");
     }
 
     /** Unlock or exit protocol method
@@ -203,9 +229,11 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
      */
     public void unlock(int tid) {
         //System.out.println("Thread-" + tid + ": unlocking...");
+        //System.out.println("T" + tid + " out of critical section");
 
         // Exit
         // next := level + 1
         this.next.set(this.level[tid] + 1);
+        //System.out.println("T" + tid + " next: " + this.next.get());
     }
 }
