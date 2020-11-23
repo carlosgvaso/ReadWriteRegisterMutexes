@@ -15,6 +15,7 @@ import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 //import org.openjdk.jmh.annotations.Warmup;
 
+import ReadWriteRegisterMutexes.Adaptive.AdaptiveLock;
 import ReadWriteRegisterMutexes.Tournament.TournamentLock;
 
 /** App class is the main class of the application
@@ -24,7 +25,7 @@ import ReadWriteRegisterMutexes.Tournament.TournamentLock;
 public class App {
     /** Global setting for increments in the benchmarks
      */
-    private static int gIncrements = 50000000;
+    private static int gIncrements = 1000000;
 
     /** Global setting for number of threads on benchmarks with heavy contention
      */
@@ -33,6 +34,10 @@ public class App {
     /** Global setting for number of threads on benchmarks with no contention
      */
     private static int gNoContentionThreadNum = 1;
+
+    /** Global setting for maximum number of splitters in adaptive locks
+     */
+    private static int gAdaptiveMaxSplitters = 5000000;
 
     /** Benchmark the ReentrantLock for threads incrementing a shared variable
      * 
@@ -91,6 +96,28 @@ public class App {
         } catch (IOException e) {
             System.out.println("ERROR: " + e);
         }
+    }
+
+    /** Benchmark the AdaptiveLock for 1 thread incrementing a shared variable
+     * 
+     * The benchmark measures the average time that 1 worker thread takes to
+     * increment a shared variable 50,000,000 times. Each time that the thread
+     * wants to increment the shared variable, it musts request the lock, and it
+     * releases the lock immediately after.
+     * 
+     * This benchmark is designed to measure how much overhead this lock
+     * implementation adds to the operation without any contention.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void noContentionAdaptiveLock() {
+        AdaptiveLock lockBench = new AdaptiveLock(gNoContentionThreadNum,
+            gAdaptiveMaxSplitters);
+        runIncrementBenchmark(gNoContentionThreadNum, gIncrements,
+            lockBench);
     }
 
     /** Benchmark without a lock for 1 thread incrementing a shared variable

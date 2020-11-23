@@ -1,7 +1,7 @@
-/** AdaptiveLock is a lock implementation of the Simple Adaptive Algorithm by
- * M. Merritt and G. Taubenfeld.
+/** AdaptiveLock is a mutex lock implementation of the Simple Adaptive Algorithm
+ * by M. Merritt and G. Taubenfeld.
  * 
- * This implementation is based on the algorithm description from the
+ * This mutex implementation is based on the algorithm description from the
  * Synchronization Algorithms and Concurrent Programming textbook by Gadi
  * Taubenfeld in pages 105 to 110.
  * 
@@ -12,10 +12,12 @@ package ReadWriteRegisterMutexes.Adaptive;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
-/** AdaptiveLock class implements the Simple Adaptive Algorithm for locks
+/** AdaptiveLock class implements a mutex lock using the Simple Adaptive
+ * Algorithm
  * 
- * This lock uses the Simple Adaptive Algorithm by M. Merritt and G. Taubenfeld.
+ * This mutex uses the Simple Adaptive Algorithm by M. Merritt and G. Taubenfeld.
  * 
  * If the maximum number of splitters (infArrSize) is reached, a ReentrantLock
  * is acquired to ensure safety without requiring infinite memory.
@@ -73,6 +75,18 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
      */
     private int[] level;
 
+    /** Fallback lock for high contention environments
+     * 
+     * In case this adaptive lock is run in a high contention environment, there
+     * is a fallback lock to avoid the adaptive lock from degrading. This
+     * fallback lock will be used when a thread in contention of the critical
+     * section reaches the last level of MT splitters. The last level is
+     * this.infArrSize - 1.
+     * 
+     * @see AdaptiveLock.infArrSize
+     */
+    private ReentrantLock fallbackLock;
+
     /** Constructor
      * 
      * @param numThreads    Number of threads using the lock
@@ -99,9 +113,11 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
         for (int i=0; i<this.n; i++) {
             this.level[i] = 0;
         }
+
+        this.fallbackLock = new ReentrantLock();
     }
 
-    /** Lock or entry protocol method
+    /** Lock or critical section entry protocol method of mutex
      * 
      * TODO: Add other lock for when we reach the last level
      * 
@@ -128,8 +144,9 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
                 start = false;
                 this.level[tid] = this.next.get();
 
-                if (this.level[tid] >= this.infArrSize) {
-                    System.out.println("T" +tid + " reached last level: " + this.level[tid]);
+                if (this.level[tid] >= (this.infArrSize - 1)) {
+                    System.out.println("T" +tid + " reached last level or higher: "
+                        + this.level[tid]);
                 }
             }
 
@@ -178,8 +195,9 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
                     // level := level + 1
                     this.level[tid] = this.level[tid] + 1;
 
-                    if (this.level[tid] >= this.infArrSize) {
-                        System.out.println("T" +tid + " reached last level: " + this.level[tid]);
+                    if (this.level[tid] >= (this.infArrSize - 1)) {
+                        System.out.println("T" +tid + " reached last level or higher: "
+                            + this.level[tid]);
                     }
                 } // fi
             } else { // else
@@ -196,20 +214,26 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
                     // level := level + 1
                     this.level[tid] = this.level[tid] + 1;
 
-                    if (this.level[tid] >= this.infArrSize) {
-                        System.out.println("T" +tid + " reached last level: " + this.level[tid]);
+                    if (this.level[tid] >= (this.infArrSize - 1)) {
+                        System.out.println("T" +tid + " reached last level or higher: "
+                            + this.level[tid]);
                     }
                 } // fi
             } // fi
         } // until win = 1
     }
 
-    /** Unlock or exit protocol method
+    /** Unlock or critical section exit protocol method of mutex
      * 
-     * @param   tid Thread ID
+     * @param tid Thread ID
      */
     public void unlock(int tid) {
         // Exit
+        if ((this.level[tid] + 1) >= (this.infArrSize - 1)) {
+            System.out.println("T" +tid + " set next to last level or higher: "
+                + (this.level[tid] + 1));
+        }
+
         // next := level + 1
         this.next.set(this.level[tid] + 1);
     }
