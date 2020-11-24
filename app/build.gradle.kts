@@ -14,6 +14,7 @@ plugins {
 repositories {
     // Use JCenter for resolving dependencies.
     jcenter()
+    //mavenCentral()
 }
 
 dependencies {
@@ -27,6 +28,12 @@ dependencies {
     // JMH for benchmarks
     implementation("org.openjdk.jmh:jmh-core:1.26")
     annotationProcessor("org.openjdk.jmh:jmh-generator-annprocess:1.26")
+
+    // Log4j
+    implementation("org.apache.logging.log4j:log4j-api:2.14.0")
+    //annotationProcessor("org.apache.logging.log4j:log4j-api:2.14")
+    implementation("org.apache.logging.log4j:log4j-core:2.14.0")
+    //annotationProcessor("org.apache.logging.log4j:log4j-core:2.14")
 }
 
 application {
