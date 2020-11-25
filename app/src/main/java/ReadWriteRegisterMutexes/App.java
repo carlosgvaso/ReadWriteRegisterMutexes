@@ -48,113 +48,113 @@ public class App {
             System.out.println("ERROR: " + e);
         }
     }
-//
-//    /** Benchmark the ReentrantLock for threads incrementing a shared variable
-//     *
-//     * The benchmark measures the average time that 8 worker threads take to
-//     * increment/decrement a shared variable 50,000,000 times. Half of the
-//     * threads will increment the shared variable by 1 each time in a loop, and
-//     * the other half will decrement it by 1 each time in a loop. Each time that
-//     * any of the threads wants to increment/decrement the shared variable, they
-//     * must request the lock, and they release the lock immediately after.
-//     *
-//     * This benchmark is designed to measure how well this lock implementation
-//     * performs under heavy contention.
-//     */
-//    @Benchmark
-//    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
-//    @Fork(value = 1) // Run 1 fork with no warmup forks
-//    //@Warmup(iterations=2) // Run that number of warmup iterations
-//    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
-//    public void heavyContentionReentrantLock() {
-//        ReentrantLock lockBench = new ReentrantLock();
-//        runIncrementBenchmark(gHeavyContentionThreadNum, gIncrements,
-//            lockBench);
-//    }
-//
-//    /** Benchmark the TournamentLock for threads incrementing a shared variable
-//     *
-//     * The benchmark measures the average time that 8 worker threads take to
-//     * increment/decrement a shared variable 50,000,000 times. Half of the
-//     * threads will increment the shared variable by 1 each time in a loop, and
-//     * the other half will decrement it by 1 each time in a loop. Each time that
-//     * any of the threads wants to increment/decrement the shared variable, they
-//     * must request the lock, and they release the lock immediately after.
-//     *
-//     * This benchmark is designed to measure how well this lock implementation
-//     * performs under heavy contention.
-//     */
-//    @Benchmark
-//    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
-//    @Fork(value = 1) // Run 1 fork with no warmup forks
-//    //@Warmup(iterations=2) // Run that number of warmup iterations
-//    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
-//    public void heavyContentionTournamentLock() {
-//        TournamentLock lockBench = new TournamentLock(gHeavyContentionThreadNum);
-//        runIncrementBenchmark(gHeavyContentionThreadNum, gIncrements,
-//            lockBench);
-//    }
-//
-//    /** Benchmark without a lock for 1 thread incrementing a shared variable
-//     *
-//     * The benchmark measures the average time that 1 worker thread takes to
-//     * increment a shared variable 50,000,000 times. This benchmark doesn't use
-//     * a lock.
-//     *
-//     * This benchmark is designed to measure how much overhead other lock
-//     * implementations add to the operation without any contention. This is the
-//     * reference benchmark of the operation without using a lock.
-//     */
-//    @Benchmark
-//    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
-//    @Fork(value = 1) // Run 1 fork with no warmup forks
-//    //@Warmup(iterations=2) // Run that number of warmup iterations
-//    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
-//    public void noContentionNoLock() {
-//        runIncrementBenchmark(gNoContentionThreadNum, gIncrements, null);
-//    }
-//
-//    /** Benchmark the ReentrantLock for 1 thread incrementing a shared variable
-//     *
-//     * The benchmark measures the average time that 1 worker thread takes to
-//     * increment a shared variable 50,000,000 times. Each time that the thread
-//     * wants to increment the shared variable, it musts request the lock, and it
-//     * releases the lock immediately after.
-//     *
-//     * This benchmark is designed to measure how much overhead this lock
-//     * implementation adds to the operation without any contention.
-//     */
-//    @Benchmark
-//    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
-//    @Fork(value = 1) // Run 1 fork with no warmup forks
-//    //@Warmup(iterations=2) // Run that number of warmup iterations
-//    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
-//    public void noContentionReentrantLock() {
-//        ReentrantLock lockBench = new ReentrantLock();
-//        runIncrementBenchmark(gNoContentionThreadNum, gIncrements,
-//            lockBench);
-//    }
-//
-//    /** Benchmark the TournamentLock for 1 thread incrementing a shared variable
-//     *
-//     * The benchmark measures the average time that 1 worker thread takes to
-//     * increment a shared variable 50,000,000 times. Each time that the thread
-//     * wants to increment the shared variable, it musts request the lock, and it
-//     * releases the lock immediately after.
-//     *
-//     * This benchmark is designed to measure how much overhead this lock
-//     * implementation adds to the operation without any contention.
-//     */
-//    @Benchmark
-//    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
-//    @Fork(value = 1) // Run 1 fork with no warmup forks
-//    //@Warmup(iterations=2) // Run that number of warmup iterations
-//    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
-//    public void noContentionTournamentLock() {
-//        TournamentLock lockBench = new TournamentLock(gNoContentionThreadNum);
-//        runIncrementBenchmark(gNoContentionThreadNum, gIncrements,
-//            lockBench);
-//    }
+
+    /** Benchmark the ReentrantLock for threads incrementing a shared variable
+     *
+     * The benchmark measures the average time that 8 worker threads take to
+     * increment/decrement a shared variable 50,000,000 times. Half of the
+     * threads will increment the shared variable by 1 each time in a loop, and
+     * the other half will decrement it by 1 each time in a loop. Each time that
+     * any of the threads wants to increment/decrement the shared variable, they
+     * must request the lock, and they release the lock immediately after.
+     *
+     * This benchmark is designed to measure how well this lock implementation
+     * performs under heavy contention.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void heavyContentionReentrantLock() {
+        ReentrantLock lockBench = new ReentrantLock();
+        runIncrementBenchmark(gHeavyContentionThreadNum, gIncrements,
+            lockBench);
+    }
+
+    /** Benchmark the TournamentLock for threads incrementing a shared variable
+     *
+     * The benchmark measures the average time that 8 worker threads take to
+     * increment/decrement a shared variable 50,000,000 times. Half of the
+     * threads will increment the shared variable by 1 each time in a loop, and
+     * the other half will decrement it by 1 each time in a loop. Each time that
+     * any of the threads wants to increment/decrement the shared variable, they
+     * must request the lock, and they release the lock immediately after.
+     *
+     * This benchmark is designed to measure how well this lock implementation
+     * performs under heavy contention.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void heavyContentionTournamentLock() {
+        TournamentLock lockBench = new TournamentLock(gHeavyContentionThreadNum);
+        runIncrementBenchmark(gHeavyContentionThreadNum, gIncrements,
+            lockBench);
+    }
+
+    /** Benchmark without a lock for 1 thread incrementing a shared variable
+     *
+     * The benchmark measures the average time that 1 worker thread takes to
+     * increment a shared variable 50,000,000 times. This benchmark doesn't use
+     * a lock.
+     *
+     * This benchmark is designed to measure how much overhead other lock
+     * implementations add to the operation without any contention. This is the
+     * reference benchmark of the operation without using a lock.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void noContentionNoLock() {
+        runIncrementBenchmark(gNoContentionThreadNum, gIncrements, null);
+    }
+
+    /** Benchmark the ReentrantLock for 1 thread incrementing a shared variable
+     *
+     * The benchmark measures the average time that 1 worker thread takes to
+     * increment a shared variable 50,000,000 times. Each time that the thread
+     * wants to increment the shared variable, it musts request the lock, and it
+     * releases the lock immediately after.
+     *
+     * This benchmark is designed to measure how much overhead this lock
+     * implementation adds to the operation without any contention.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void noContentionReentrantLock() {
+        ReentrantLock lockBench = new ReentrantLock();
+        runIncrementBenchmark(gNoContentionThreadNum, gIncrements,
+            lockBench);
+    }
+
+    /** Benchmark the TournamentLock for 1 thread incrementing a shared variable
+     *
+     * The benchmark measures the average time that 1 worker thread takes to
+     * increment a shared variable 50,000,000 times. Each time that the thread
+     * wants to increment the shared variable, it musts request the lock, and it
+     * releases the lock immediately after.
+     *
+     * This benchmark is designed to measure how much overhead this lock
+     * implementation adds to the operation without any contention.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void noContentionTournamentLock() {
+        TournamentLock lockBench = new TournamentLock(gNoContentionThreadNum);
+        runIncrementBenchmark(gNoContentionThreadNum, gIncrements,
+            lockBench);
+    }
 
     /** Benchmark the OneBit for 1 thread incrementing a shared variable
      *
@@ -169,7 +169,7 @@ public class App {
         runIncrementBenchmark(gNoContentionThreadNum, gIncrements, lockBench);
     }
 
-    /** Benchmark the TournamentLock for threads incrementing a shared variable
+    /** Benchmark the OneBit for threads incrementing a shared variable
      *
      * The benchmark measures the average time that 8 worker threads take to
      * increment/decrement a shared variable 50,000,000 times. Half of the

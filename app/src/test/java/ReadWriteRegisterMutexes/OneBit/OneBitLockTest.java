@@ -15,7 +15,7 @@ public class OneBitLockTest {
      */
     @Test
     public void testOneBitLockIncrement() {
-        int numWorkers = 1;
+        int numWorkers = 8;
         int increments = 1000000;
         OneBitLock lock = new OneBitLock(numWorkers);
         Runnable[] workers = new Runnable[numWorkers];
@@ -53,7 +53,7 @@ public class OneBitLockTest {
         //System.out.println("Success: c = " + ((Worker)workers[0]).getC()
         //        + " expected 0");
         // Check we got the right result
-        assertEquals("Synchronization error: ", 1000000, ((Worker)workers[0]).getC());
+        assertEquals("Synchronization error: ", 0, ((Worker)workers[0]).getC());
     }
 }
 
