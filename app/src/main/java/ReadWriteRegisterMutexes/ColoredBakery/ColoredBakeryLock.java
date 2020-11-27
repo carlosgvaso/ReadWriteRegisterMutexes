@@ -16,13 +16,23 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class ColoredBakeryLock implements ReadWriteRegisterMutexes.Lock{
 
+    /* Ticket Colors */
     private final int WHITE = 0;
     private final int BLACK = 1;
 
+    /* Shared color bit */
     private AtomicInteger sharedColor;
+
+    /* Flag to indicate the process in doorway */
     private AtomicBoolean choosing[];
+
+    /* Ticket number. ticketNum[i] is the ticket for process i */
     private AtomicInteger []ticketNum;
+
+    /* Ticket color. ticketColor[i] is the color of process i's ticket */
     private AtomicInteger []ticketColor;
+
+    /* Number of process*/
     private int N;
     //private static final Logger log = LogManager.getRootLogger();
 
@@ -62,6 +72,13 @@ public class ColoredBakeryLock implements ReadWriteRegisterMutexes.Lock{
         //End of Doorway
 
         //Step 2
+        /*
+        * The order between colored tickets:
+        *  - If two tickets have different colors, the ticket whose color is different from sharedColor is smaller
+        *  - If two tickets have the same color, the ticket with smaller number is smaller
+        *  - If tickets of two processes have the same color and the same number then the process with smaller identifier (process id) is smaller
+        * */
+
         for (int j = 0; j < N; j++) {
             while(choosing[j].get()){
                 //log.warn("Waiting for process " + j + " finish choosing and move out of doorway ");
