@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.TimeUnit;
 
+import ReadWriteRegisterMutexes.ColoredBakery.ColoredBakeryLock;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -25,8 +26,7 @@ import ReadWriteRegisterMutexes.OneBit.OneBitLock;
 public class App {
     /** Global setting for increments in the benchmarks
      */
-//    private static int gIncrements = 50000000;
-    private static int gIncrements = 50;
+    private static int gIncrements = 50000000;
 
     /** Global setting for number of threads on benchmarks with heavy contention
      */
@@ -189,6 +189,41 @@ public class App {
     public void heavyContentionOneBitLock() {
         OneBitLock lockBench = new OneBitLock(gHeavyContentionThreadNum);
         runIncrementBenchmark(gHeavyContentionThreadNum, gIncrements, lockBench);
+    }
+
+    /** Benchmark the ColoredBakeryLock for 1 thread incrementing a shared variable
+     *
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void noContentionColoredBakeryLock() {
+        ColoredBakeryLock lockBench = new ColoredBakeryLock(gNoContentionThreadNum);
+        runIncrementBenchmark(gNoContentionThreadNum, gIncrements, lockBench);
+    }
+
+    /** Benchmark the OneBit for threads incrementing a shared variable
+     *
+     * The benchmark measures the average time that 8 worker threads take to
+     * increment/decrement a shared variable 50,000,000 times. Half of the
+     * threads will increment the shared variable by 1 each time in a loop, and
+     * the other half will decrement it by 1 each time in a loop. Each time that
+     * any of the threads wants to increment/decrement the shared variable, they
+     * must request the lock, and they release the lock immediately after.
+     *
+     * This benchmark is designed to measure how well this lock implementation
+     * performs under heavy contention.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void heavyContentionColoredBakeryLock() {
+        ColoredBakeryLock lockBench = new ColoredBakeryLock(gHeavyContentionThreadNum);
+        runIncrementBenchmark(2, 100000, lockBench);
     }
 
     /** Run the increment a shared counter a set number of times per thread
