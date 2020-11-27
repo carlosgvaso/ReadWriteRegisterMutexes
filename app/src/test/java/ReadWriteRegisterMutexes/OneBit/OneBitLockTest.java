@@ -8,7 +8,7 @@ import ReadWriteRegisterMutexes.Worker;
 import ReadWriteRegisterMutexes.Tournament.TournamentLock;
 
 public class OneBitLockTest {
-    /** Test the TournamentLock by incrementing the c shared variable 1,000,000
+    /** Test the OneBitLock by incrementing the c shared variable 1,000,000
      * times while concurrently decrementing it another 1,000,000 times. There
      * is no guarantee of the atomicity of the increments or decrements except
      * if the lock works.
