@@ -16,6 +16,7 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 //import org.openjdk.jmh.annotations.Warmup;
 
 import ReadWriteRegisterMutexes.Tournament.TournamentLock;
+import ReadWriteRegisterMutexes.OneBit.OneBitLock;
 
 /** App class is the main class of the application
  * 
@@ -24,7 +25,8 @@ import ReadWriteRegisterMutexes.Tournament.TournamentLock;
 public class App {
     /** Global setting for increments in the benchmarks
      */
-    private static int gIncrements = 50000000;
+//    private static int gIncrements = 50000000;
+    private static int gIncrements = 50;
 
     /** Global setting for number of threads on benchmarks with heavy contention
      */
@@ -34,15 +36,28 @@ public class App {
      */
     private static int gNoContentionThreadNum = 1;
 
+    /** Entry point of the App class
+     *
+     * It runs benchmarks for all the implemented read-write register locks.
+     */
+    public static void main(String[] args) {
+        // Run the benchmarks
+        try {
+            org.openjdk.jmh.Main.main(args);
+        } catch (IOException e) {
+            System.out.println("ERROR: " + e);
+        }
+    }
+
     /** Benchmark the ReentrantLock for threads incrementing a shared variable
-     * 
+     *
      * The benchmark measures the average time that 8 worker threads take to
      * increment/decrement a shared variable 50,000,000 times. Half of the
      * threads will increment the shared variable by 1 each time in a loop, and
      * the other half will decrement it by 1 each time in a loop. Each time that
      * any of the threads wants to increment/decrement the shared variable, they
      * must request the lock, and they release the lock immediately after.
-     * 
+     *
      * This benchmark is designed to measure how well this lock implementation
      * performs under heavy contention.
      */
@@ -58,14 +73,14 @@ public class App {
     }
 
     /** Benchmark the TournamentLock for threads incrementing a shared variable
-     * 
+     *
      * The benchmark measures the average time that 8 worker threads take to
      * increment/decrement a shared variable 50,000,000 times. Half of the
      * threads will increment the shared variable by 1 each time in a loop, and
      * the other half will decrement it by 1 each time in a loop. Each time that
      * any of the threads wants to increment/decrement the shared variable, they
      * must request the lock, and they release the lock immediately after.
-     * 
+     *
      * This benchmark is designed to measure how well this lock implementation
      * performs under heavy contention.
      */
@@ -80,25 +95,12 @@ public class App {
             lockBench);
     }
 
-    /** Entry point of the App class
-     * 
-     * It runs benchmarks for all the implemented read-write register locks.
-     */
-    public static void main(String[] args) {
-        // Run the benchmarks
-        try {
-            org.openjdk.jmh.Main.main(args);
-        } catch (IOException e) {
-            System.out.println("ERROR: " + e);
-        }
-    }
-
     /** Benchmark without a lock for 1 thread incrementing a shared variable
-     * 
+     *
      * The benchmark measures the average time that 1 worker thread takes to
      * increment a shared variable 50,000,000 times. This benchmark doesn't use
      * a lock.
-     * 
+     *
      * This benchmark is designed to measure how much overhead other lock
      * implementations add to the operation without any contention. This is the
      * reference benchmark of the operation without using a lock.
@@ -113,12 +115,12 @@ public class App {
     }
 
     /** Benchmark the ReentrantLock for 1 thread incrementing a shared variable
-     * 
+     *
      * The benchmark measures the average time that 1 worker thread takes to
      * increment a shared variable 50,000,000 times. Each time that the thread
      * wants to increment the shared variable, it musts request the lock, and it
      * releases the lock immediately after.
-     * 
+     *
      * This benchmark is designed to measure how much overhead this lock
      * implementation adds to the operation without any contention.
      */
@@ -134,12 +136,12 @@ public class App {
     }
 
     /** Benchmark the TournamentLock for 1 thread incrementing a shared variable
-     * 
+     *
      * The benchmark measures the average time that 1 worker thread takes to
      * increment a shared variable 50,000,000 times. Each time that the thread
      * wants to increment the shared variable, it musts request the lock, and it
      * releases the lock immediately after.
-     * 
+     *
      * This benchmark is designed to measure how much overhead this lock
      * implementation adds to the operation without any contention.
      */
@@ -152,6 +154,41 @@ public class App {
         TournamentLock lockBench = new TournamentLock(gNoContentionThreadNum);
         runIncrementBenchmark(gNoContentionThreadNum, gIncrements,
             lockBench);
+    }
+
+    /** Benchmark the OneBit for 1 thread incrementing a shared variable
+     *
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void noContentionOneBitLock() {
+        OneBitLock lockBench = new OneBitLock(gNoContentionThreadNum);
+        runIncrementBenchmark(gNoContentionThreadNum, gIncrements, lockBench);
+    }
+
+    /** Benchmark the OneBit for threads incrementing a shared variable
+     *
+     * The benchmark measures the average time that 8 worker threads take to
+     * increment/decrement a shared variable 50,000,000 times. Half of the
+     * threads will increment the shared variable by 1 each time in a loop, and
+     * the other half will decrement it by 1 each time in a loop. Each time that
+     * any of the threads wants to increment/decrement the shared variable, they
+     * must request the lock, and they release the lock immediately after.
+     *
+     * This benchmark is designed to measure how well this lock implementation
+     * performs under heavy contention.
+     */
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
+    @Fork(value = 1) // Run 1 fork with no warmup forks
+    //@Warmup(iterations=2) // Run that number of warmup iterations
+    @BenchmarkMode(Mode.AverageTime) // Measure average time in benchmarks
+    public void heavyContentionOneBitLock() {
+        OneBitLock lockBench = new OneBitLock(gHeavyContentionThreadNum);
+        runIncrementBenchmark(gHeavyContentionThreadNum, gIncrements, lockBench);
     }
 
     /** Run the increment a shared counter a set number of times per thread
