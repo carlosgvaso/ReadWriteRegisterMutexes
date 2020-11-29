@@ -18,7 +18,7 @@ import org.openjdk.jmh.annotations.TearDown;
 
 import ReadWriteRegisterMutexes.Tournament.TournamentLock;
 
-/** Tournament lock benchmarks
+/** TournamentLock benchmarks
  */
 @BenchmarkMode(Mode.SingleShotTime) // Measure single run time in benchmarks
 @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output

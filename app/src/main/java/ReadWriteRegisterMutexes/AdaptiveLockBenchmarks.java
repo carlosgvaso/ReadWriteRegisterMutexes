@@ -18,7 +18,7 @@ import org.openjdk.jmh.annotations.TearDown;
 
 import ReadWriteRegisterMutexes.Adaptive.AdaptiveLock;
 
-/** Adaptive lock benchmarks
+/** AdaptiveLock benchmarks
  */
 @BenchmarkMode(Mode.SingleShotTime) // Measure single run time in benchmarks
 @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output

@@ -17,7 +17,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
-/** Reentrant lock benchmarks
+/** ReentrantLock benchmarks
  */
 @BenchmarkMode(Mode.SingleShotTime) // Measure single run time in benchmarks
 @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
