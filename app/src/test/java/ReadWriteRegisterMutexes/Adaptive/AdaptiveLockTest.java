@@ -20,9 +20,8 @@ public class AdaptiveLockTest {
     @Test
     public void testAdaptiveLockIncrement() {
         int numWorkers = 8;
-        //int increments = 1000000;
-        int increments = 50000000;
-        int maxSplitters = 10000000;
+        int increments = 5000000;
+        int maxSplitters = 80000000;
         AdaptiveLock lock = new AdaptiveLock(numWorkers, maxSplitters);
         Runnable[] workers = new Runnable[numWorkers];
         Thread[] threads = new Thread[numWorkers];

@@ -12,7 +12,6 @@ package ReadWriteRegisterMutexes.Adaptive;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
 
 /** AdaptiveLock class implements a mutex lock using the Simple Adaptive
  * Algorithm
@@ -75,18 +74,6 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
      */
     private int[] level;
 
-    /** Fallback lock for high contention environments
-     * 
-     * In case this adaptive lock is run in a high contention environment, there
-     * is a fallback lock to avoid the adaptive lock from degrading. This
-     * fallback lock will be used when a thread in contention of the critical
-     * section reaches the last level of MT splitters. The last level is
-     * this.infArrSize - 1.
-     * 
-     * @see AdaptiveLock.infArrSize
-     */
-    private ReentrantLock fallbackLock;
-
     /** Constructor
      * 
      * @param numThreads    Number of threads using the lock
@@ -113,13 +100,9 @@ public class AdaptiveLock implements ReadWriteRegisterMutexes.Lock {
         for (int i=0; i<this.n; i++) {
             this.level[i] = 0;
         }
-
-        this.fallbackLock = new ReentrantLock();
     }
 
     /** Lock or critical section entry protocol method of mutex
-     * 
-     * TODO: Add other lock for when we reach the last level
      * 
      * @param tid Thread ID
      */
