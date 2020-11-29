@@ -38,3 +38,14 @@ application {
     // Define the main class for the application.
     mainClass.set("ReadWriteRegisterMutexes.App")
 }
+
+// Increase JVM heap size when running project
+tasks.withType<JavaExec>().configureEach {
+    jvmArgs = listOf("-Xms1G", "-Xmx8G")
+}
+
+// Increase JVM heap size when running tests
+tasks.test {
+    minHeapSize = "1G"
+    maxHeapSize = "8G"
+}

@@ -1,8 +1,9 @@
-/**
- * TournamentLock is a lock implementation of the Peterson's Tournament Algorithm
+/** TournamentLock is a mutex lock implementation of the Peterson's Tournament
+ * Algorithm
  * 
- * This implementation is based on the pseudo-code from the Synchronization
- * Algorithms and Concurrent Programming textbook by Gadi Taubenfeld at page 38.
+ * This implementation is based on the algorithm description from the
+ * Synchronization Algorithms and Concurrent Programming textbook by Gadi
+ * Taubenfeld at pages 37 to 40.
  */
 package ReadWriteRegisterMutexes.Tournament;
 
@@ -10,7 +11,10 @@ import java.lang.Math;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/** TournamentLock class implements the Peterson's Tournament algorithm for locks
+/** TournamentLock class implements a mutex lock using the Peterson's Tournament
+ * Algorithm
+ * 
+ * The mutex uses the Pterson's Tournament Algorithm by Peterson.
  */
 public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
     /** Number of threads or leaves of the tournament tree
@@ -112,7 +116,7 @@ public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
         }
     }
 
-    /** Lock or entry protocol method
+    /** Lock or critical section entry protocol method of mutex
      * 
      * @param tid Thread ID
      */
@@ -148,9 +152,9 @@ public class TournamentLock implements ReadWriteRegisterMutexes.Lock {
         //System.out.print("");
     }
 
-    /** Unlock or exit protocol method
+    /** Unlock or critical section exit protocol method of mutex
      * 
-     * @param   tid Thread ID
+     * @param tid Thread ID
      */
     public void unlock(int tid) {
         //System.out.println("Thread-" + tid + ": unlocking...");
