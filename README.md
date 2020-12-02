@@ -37,8 +37,14 @@ Available benchmarks:
 * No contention, no lock
 * No contention, ReentrantLock
 * No contention, TournamentLock
-* Heavy contention, ReentrantLock
-* Heavy contention, TournamentLock
+* No contention, ColoredBakeryLock
+* No contention, OneBitLock
+* No contention, AdaptiveLock
+* Heavy contention (2,4,8), ReentrantLock
+* Heavy contention (2,4,8), TournamentLock
+* Heavy contention (2,4,8), ColoredBakeryLock
+* Heavy contention (2,4,8), OneBitLock
+* Heavy contention (2,4,8), AdaptiveLock
 
 All benchmarks are based in the operation of incrementing/decrementing a shared
 counter variable by one a set number of times. The benchmark measures how much
@@ -55,7 +61,7 @@ the counter is incremented without using a lock. This is compared to the cases
 when different locks are used to lock the shared variable before incrementing
 it.
 
-The heavy contention benchmarks use 8 threads incrementing and decrementing the
+The heavy contention benchmarks use 2, 4 and 8 threads incrementing and decrementing the
 shared counter variable concurrently a set number of times per thread. Half of
 the threads increment the counter, and the other half decrement the counter.
 This allows us to compare how threads perform in a heavy contention environment.
