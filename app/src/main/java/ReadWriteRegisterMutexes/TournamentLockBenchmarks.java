@@ -24,7 +24,7 @@ import ReadWriteRegisterMutexes.Tournament.TournamentLock;
 @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
 @Fork(1) // Run 1 fork with no warmup forks
 @Warmup(iterations=5) // Run that number of warmup iterations
-@Measurement(iterations=50) // Run that number of measurement iterations
+@Measurement(iterations=20) // Run that number of measurement iterations
 public class TournamentLockBenchmarks {
 
     /** Heavy contention benchmark state

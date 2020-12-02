@@ -12,6 +12,8 @@ public class IncrementBenchmark {
     /** Global setting for number of threads on benchmarks with heavy contention
      */
     private static int heavyContentionThreadNum = 8;
+    //private static int heavyContentionThreadNum = 4;
+    //private static int heavyContentionThreadNum = 2;
 
     /** Global setting for increments in the benchmarks
      */

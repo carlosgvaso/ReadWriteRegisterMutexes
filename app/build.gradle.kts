@@ -41,11 +41,11 @@ application {
 
 // Increase JVM heap size when running project
 tasks.withType<JavaExec>().configureEach {
-    jvmArgs = listOf("-Xms1G", "-Xmx8G")
+    jvmArgs = listOf("-Xms1G", "-Xmx20G")
 }
 
 // Increase JVM heap size when running tests
 tasks.test {
     minHeapSize = "1G"
-    maxHeapSize = "8G"
+    maxHeapSize = "20G"
 }

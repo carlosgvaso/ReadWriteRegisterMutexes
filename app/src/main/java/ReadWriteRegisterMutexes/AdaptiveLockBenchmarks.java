@@ -24,7 +24,7 @@ import ReadWriteRegisterMutexes.Adaptive.AdaptiveLock;
 @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
 @Fork(1) // Run 1 fork with no warmup forks
 @Warmup(iterations=5) // Run that number of warmup iterations
-@Measurement(iterations=50) // Run that number of measurement iterations
+@Measurement(iterations=20) // Run that number of measurement iterations
 public class AdaptiveLockBenchmarks {
 
     /** Heavy contention benchmark state
@@ -53,7 +53,7 @@ public class AdaptiveLockBenchmarks {
         @Setup(Level.Trial)
         public void doSetupTrial() {
             System.out.print("Setup trial: ");
-            this.adaptiveMaxSplitters = 50000000;
+            this.adaptiveMaxSplitters = 80000000;
             this.benchmark = new IncrementBenchmark();
         }
 

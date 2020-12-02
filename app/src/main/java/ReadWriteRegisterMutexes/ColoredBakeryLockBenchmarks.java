@@ -25,8 +25,8 @@ import ReadWriteRegisterMutexes.ColoredBakery.ColoredBakeryLock;
 @OutputTimeUnit(TimeUnit.NANOSECONDS) // Use nanoseconds for output
 @Fork(1) // Run 1 fork with no warmup forks
 @Warmup(iterations=5) // Run that number of warmup iterations
-@Measurement(iterations=50) // Run that number of measurement iterations
-@Timeout(time=20, timeUnit=TimeUnit.MINUTES) // Timeout if the iteration exceeds this time
+@Measurement(iterations=20) // Run that number of measurement iterations
+@Timeout(time=60, timeUnit=TimeUnit.MINUTES) // Timeout if the iteration exceeds this time
 public class ColoredBakeryLockBenchmarks {
 
     /** Heavy contention benchmark state
